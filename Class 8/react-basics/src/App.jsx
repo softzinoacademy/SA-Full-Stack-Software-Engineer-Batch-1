@@ -1,27 +1,32 @@
+import { useId, useState } from 'react';
 import './App.css'
 import Skill from './components/Skill';
 
 const App = () => {
-  const skills = ["HTML", "CSS", "JS", "React"];
 
-  const progress = "80%";
+  // CSR, SSR, SSG
 
-  const handleClick = (number, e) => {
-    console.log('Clicked', e);
-  }
+   const [count, setCount] = useState(10);
+   const id = useId();
+
+   const increaseCount = () => {
+    setCount(count + 1);
+   }
 
   return (
     <>
-     <h2>My Skills</h2>
+    
+    <h2>{count}</h2>
 
-     <button onClick={(e) => handleClick(Math.random(), e)}>Click</button>
+    <button onClick={() => increaseCount()}>Click</button>
 
-     <ul>
-      {skills.map((skill, index) => (
-        <Skill key={index} skill={skill} progress={progress} style={{ color: "red", fontSize: "24px" }} />
-      ))}
-     </ul>
+    <form action="">
+      <label htmlFor={id + '-name'}>Enter your name:</label>
+      <input type="text" id={id + '-name'} name="name" />
 
+      <label htmlFor={id + '-email'}>Enter your email:</label>
+      <input type="email" id={id + '-email'} name="email" />
+    </form>
      
     </>
 
