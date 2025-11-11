@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { describeWeatherCode, getWeatherIcon } from "./utils/weatherCode.js";
+
+
 
 function App() {
   const [city, setCity] = useState("Dhaka");
@@ -87,6 +90,13 @@ function App() {
               </div>
               <div>
                 Weather Code: {weather?.current?.weather_code}
+              </div>
+              <div>
+                {describeWeatherCode(weather?.current?.weather_code)}
+              </div>
+
+              <div>
+                icon: {getWeatherIcon(weather?.current?.weather_code)}
               </div>
             </>
           ) : (
