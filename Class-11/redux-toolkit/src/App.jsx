@@ -1,33 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useDispatch, useSelector } from 'react-redux';
 import './App.css'
+import { addAddress } from '../counterSlice';
 
 function App() {
-  const [count, setCount] = useState(0)
+ const { addresses } = useSelector((state) => state.addressReducer);
+
+ const dispatch = useDispatch();
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+      <h1>Hello Redux Toolkit</h1>
+      {addresses.map((address) => (
+        <div key={address.id}>
+          <p>{address.street}</p>
+          <p>{address.city}</p>
+          <p>{address.postalCode}</p>
+        </div>
+      ))}
+
+          <button
+          onClick={() =>
+            dispatch(
+              addAddress({
+                id: 2,
+                street: "456 Elm St",
+                city: "Othertown",
+                state: "CA",
+                zip: "67890",
+              })
+            )
+          }
+        >
+          Add Address
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
