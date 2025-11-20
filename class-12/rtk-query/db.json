@@ -1,10 +1,8 @@
 {
   "users": [
     {
-      "id": "1",
-      "name": "Suhan",
-      "email": "suhan@example.com",
-      "password": "123456"
+      "name": "Oli Ullah",
+      "id": "1"
     },
     {
       "id": "2",
@@ -29,9 +27,8 @@
       "email": "rakib@example.com"
     },
     {
-      "id": "4881",
-      "name": "Oli",
-      "email": "oli@example.com"
+      "name": "Oli Ullah",
+      "id": "4881"
     }
   ]
 }

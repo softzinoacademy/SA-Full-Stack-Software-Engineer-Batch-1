@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
-import { useAddUserMutation, useGetUsersQuery } from "./services/usersService";
+import { useAddUserMutation, useGetUsersQuery, useUpdateUserNameByIdMutation } from "./services/usersService";
 
 export default function App() {
   const { data, isLoading, error, isSuccess } = useGetUsersQuery();
   const [addUser, { isLoading: isAdding, error: addError, isSuccess: isAddSuccess }] = useAddUserMutation();
+  const [updateUserNameById, { isLoading: isUpdating, error: updateError, isSuccess: isUpdateSuccess }] = useUpdateUserNameByIdMutation();
 
   useEffect(() => {
     if (error) {
@@ -39,7 +40,7 @@ export default function App() {
       <button onClick={() => addUser({ name: "Oli", email: "oli@example.com" })}>Add User</button>
       <ul>
         {data?.map((user) => (
-          <li key={user.id}>{user.name}</li>
+          <li onClick={() => updateUserNameById({ id: user.id, name: 'Oli Ullah' })} key={user.id}>{user.name}</li>
         ))}
       </ul>
     </div>
