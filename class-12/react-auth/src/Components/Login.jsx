@@ -47,21 +47,38 @@ const Login = () => {
   }
 
   async function signInWithEmail(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password,
-  })
-  if (error) {
-    alert(error.message);
-    console.log("Error signing in:", error);
-    return;
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+    if (error) {
+      alert(error.message);
+      console.log("Error signing in:", error);
+      return;
+    }
+    if (data) {
+      console.log("Success signing in:", data);
+      navigate("/");
+    }
   }
-  if (data) {
 
-    console.log("Success signing in:", data);
-    navigate("/");
-  }
-}
+  const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `http://localhost:5173`,
+      },
+    });
+    if (error) {
+      alert(error.message);
+      console.log("Error signing in with Google:", error);
+      return;
+    }
+    if (data) {
+      console.log("Success signing in with Google:", data);
+      navigate("/");
+    }
+  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -191,6 +208,15 @@ const Login = () => {
             Forgot your password?
           </button>
         </form>
+
+        <button
+            onClick={signInWithGoogle}
+            type="button"
+            className="w-full bg-gray-900 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors mb-4"
+          >
+            Sign in with Google
+          </button>
+
       </div>
     </div>
   );
