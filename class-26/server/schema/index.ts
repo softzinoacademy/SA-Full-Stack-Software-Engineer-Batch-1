@@ -34,5 +34,6 @@ export const appointmentSchema = new mongoose.Schema({
     patientName: { type: String },
     email: { type: String },
     phone: { type: String },
-    doctor: { type: Number },
+    doctorId: { type: String },
+    reason: { type: String },
 })

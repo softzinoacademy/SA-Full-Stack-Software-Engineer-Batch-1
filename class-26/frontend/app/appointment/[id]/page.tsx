@@ -41,7 +41,7 @@ export default function AppointmentPage() {
   const doctorId = params.id as string;
 
   const [doctor, setDoctor] = useState<Doctor | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedService, setSelectedService] = useState<string>("");
   const [formData, setFormData] = useState({
@@ -84,18 +84,34 @@ export default function AppointmentPage() {
 
   useEffect(() => {
     fetchDoctor();
-    setTimeSlots(generateTimeSlots());
+    // setTimeSlots(generateTimeSlots());
   }, [doctorId]);
 
-  const fetchDoctor = async () => {
+  const fetchDoctor = async (date: string | null = null) => {
     try {
-      const response = await fetch(
-        `http://localhost:5001/api/doctors/${doctorId}`
-      );
+      let url;
+      if (date) {
+        url = `http://localhost:5001/api/doctors/${doctorId}/${date}`;
+      } else {
+        url = `http://localhost:5001/api/doctors/${doctorId}`;
+      }
+      console.log("url", url);
+      const response = await fetch(url);
       const data = await response.json();
-      console.log("data", data);
+      console.log("doctor data", data);
       if (data.data) {
         setDoctor(data.data);
+        const timeSlotAppointments = data.appointment.map(
+          (appointment: any) => appointment.time
+        );
+        const generaedTimeSlots = generateTimeSlots();
+        for (let i = 0; i < generaedTimeSlots.length; i++) {
+          if (timeSlotAppointments.includes(generaedTimeSlots[i].time)) {
+            generaedTimeSlots[i].available = false;
+          }
+        }
+        console.log("generaedTimeSlots", generaedTimeSlots);
+        setTimeSlots(generaedTimeSlots);
       }
     } catch (error) {
       console.error("Error fetching doctor:", error);
@@ -135,15 +151,16 @@ export default function AppointmentPage() {
         },
         body: JSON.stringify({
           ...formData,
-          doctorId: doctor?.id,
+          doctorId: doctorId,
           doctorName: doctor?.name,
           date: formattedDate,
           time: selectedTime,
           service: selectedService,
         }),
       });
+      const data = await response.json();
 
-      if (response.ok) {
+      if (data.data) {
         alert("Appointment booked successfully!");
         router.push("/");
       } else {
@@ -157,12 +174,15 @@ export default function AppointmentPage() {
     }
   };
 
-  const handleDateSelect = (date: Date) => {
+  const handleDateSelect = async (date: Date) => {
+    console.log("selected date", date);
     const today = startOfDay(new Date());
     const selectedDay = startOfDay(date);
 
     if (!isBefore(selectedDay, today)) {
+      console.log("set date", date);
       setSelectedDate(date);
+      await fetchDoctor(format(date, "yyyy-MM-dd"));
     }
   };
 

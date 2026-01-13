@@ -112,13 +112,34 @@ app.get('/api/doctors/:id', async (req, res) => {
     const id = req.params.id;
     console.log("id", id)
     const doctor = await Doctor.findById(id)
-    console.log("doctor", doctor)
+    // we will find the this doctors all apointment date and time
+    // yyyy-MM-dd
+    const date = new Date().toISOString().split('T')[0];
+    const appointment = await Appointment.find({ doctorId: id, date })
     if (!doctor) res.json({
         message: 'Doctor not found'
     })
     res.json({
         message: 'Doctor found',
-        data: doctor
+        data: doctor,
+        appointment: appointment
+    })
+})
+
+app.get('/api/doctors/:id/:date', async (req, res) => {
+    const id = req.params.id;
+    console.log("id", id)
+    const doctor = await Doctor.findById(id)
+    // we will find the this doctors all apointment date and time
+    const date = req.params.date;
+    const appointment = await Appointment.find({ doctorId: id, date })
+    if (!doctor) res.json({
+        message: 'Doctor not found'
+    })
+    res.json({
+        message: 'Doctor found',
+        data: doctor,
+        appointment: appointment
     })
 })
 
@@ -136,6 +157,7 @@ app.get('/api/doctors', async (req, res) => {
     })
 })
 
+
 // service route GET , POST, PUT, DELETE = Try later with relationship
 // app.get('/api/services', async (req, res) => {
 //     const service = await Service.find({})
@@ -151,7 +173,7 @@ app.get('/api/doctors', async (req, res) => {
 // })
 
 // appointment GET, POST, PUT, DELETE
-app.get('/api/apointment', async (req, res) => {
+app.get('/api/appointments', async (req, res) => {
     const appointment = await Appointment.find({});
     if (!appointment) res.json({
         status: '404',
@@ -165,7 +187,7 @@ app.get('/api/apointment', async (req, res) => {
 })
 
 
-app.get('/api/apointment/:id', async (req, res) => {
+app.get('/api/appointments/:id', async (req, res) => {
     const id = req.params.id;
     const appointment = await Appointment.findById(id);
     if (!appointment) res.json({
@@ -179,34 +201,63 @@ app.get('/api/apointment/:id', async (req, res) => {
     })
 })
 
-app.post('/api/apointment', async (req, res) => {
-    const { name, email, phone, reason, time, doctorId, date, service } = req.body;
-    console.log("name", name)
-    console.log("email", email)
-    console.log("phone", phone)
-    console.log("reason", reason)
-    console.log("time", time)
-    console.log("doctorId", doctorId)
-    console.log("date", date)
-    console.log("service", service)
+app.post('/api/appointments', async (req, res) => {
+    // use mongoose trasection for this
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+        const { name, email, phone, reason, time, doctorId, date } = req.body;
+        const user = await User.findOne({ email });
+        let newUserId;
+        if (!user) {
+            const newUser = new User({
+                id: Date.now(),
+                name,
+                email,
+                phone
+            })
+            const nu = await newUser.save()
+            newUserId = nu._id;
+        };
+        const userId = user?._id || newUserId;
+        console.log("*********** userId", userId);
 
-    res.send("ok");
-
-    // if (!name && !email && !phone) res.json({
-    //     status: '404',
-    //     message: 'there is no appointment data'
-    // })
-    // const appointment = new Appointment({
-    //     name,
-    //     email,
-    //     phone
-    // })
-    // const a = await appointment.save()
-    // res.json({
-    //     status: 'success',
-    //     message: 'appointment fetch successfully ',
-    //     data: a
-    // })
+        const appointment = await Appointment.find({ doctorId: doctorId, date: date, time: time });
+        if (appointment.length > 0) {
+            res.json({
+                status: '404',
+                message: 'this time already booked'
+            })
+        } else {
+            const newAppointment = new Appointment({
+                id: Date.now(),
+                doctorId,
+                date,
+                time,
+                patientName: name,
+                email,
+                phone,
+                reason,
+            })
+            const a = await newAppointment.save()
+            res.json({
+                status: 'success',
+                message: 'appointment done successfully ',
+                data: a
+            })
+        }
+        await session.commitTransaction();
+        await session.endSession();
+    } catch (error) {
+        await session.abortTransaction();
+        await session.endSession();
+        console.log('error happening')
+        res.json({
+            status: 'error',
+            message: 'appointment not done successfully ',
+            error: error
+        })
+    }
 })
 
 
